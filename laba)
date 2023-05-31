@@ -1,0 +1,165 @@
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+namespace DiscrRorzrax
+{
+    class Program
+    {
+        public static int GetIndex(int m, int i)
+        {
+            if (m % 2 == 0 && m > 2)
+            {
+                if (i < m - 1)
+                {
+                    return i;
+                }
+                else
+                {
+                    return m - 2;
+                }
+            }
+            else
+            {
+                return m - 1;
+            }
+        }
+
+        public static void GeneratePermutations(int m, int[] array)
+        {
+            if (m == 1)
+            {
+                Console.WriteLine(string.Join(" ", array));
+            }
+            else
+            {
+                for (int i = 1; i <= m; i++)
+                {
+                    GeneratePermutations(m - 1, array);
+                    if (i < m)
+                    {
+                        int temp = array[GetIndex(m, i) - 1];
+                        array[GetIndex(m, i) - 1] = array[m - 1];
+                        array[m - 1] = temp;
+                    }
+                }
+            }
+        }
+
+        public static void Main(string[] args)
+        {
+            int n = Int32.Parse(Console.ReadLine());
+            int[] P = new int[n];
+            for (int i = 0; i < n; i++)
+            {
+                P[i] = i + 1;
+            }
+            GeneratePermutations(n, P);
+            Console.WriteLine();
+            Program2.GeneratePartitions(n);
+            Console.ReadKey();
+        }
+    }
+
+    public class Program2
+    {
+        public static void GeneratePartitions(int n)
+        {
+            int[] block = new int[n + 1];
+            bool[] vertex = new bool[n + 1];
+            int[] next = new int[n + 1];
+            int[] prev = new int[n + 1];
+
+            for (int i = 1; i <= n; i++)
+            {
+                block[i] = 1;
+                vertex[i] = true;
+            }
+
+            next[1] = 0;
+            PrintPartition(block);
+
+            int j = n;
+            while (j > 1)
+            {
+                int k = block[j];
+                if (vertex[j])
+                {
+                    if (next[k] == 0)
+                    {
+                        next[k] = j;
+                        prev[j] = k;
+                        next[j] = 0;
+                    }
+                    if (next[k] > j)
+                    {
+                        prev[j] = k;
+                        next[j] = next[k];
+                        prev[next[j]] = j;
+                        next[k] = j;
+                    }
+                    block[j] = next[k];
+                }
+                else
+                {
+                    block[j] = prev[k];
+                    if (k == j)
+                    {
+                        if (next[k] == 0)
+                        {
+                            next[prev[k]] = 0;
+                        }
+                        else
+                        {
+                            next[prev[k]] = next[k];
+                            prev[next[k]] = prev[k];
+                        }
+                    }
+                }
+                PrintPartition(block);
+                j = n;
+                while (j > 1 && ((vertex[j] && (block[j] == j)) || (!vertex[j] && (block[j] == 1))))
+                {
+                    vertex[j] = !vertex[j];
+                    j--;
+                }
+            }
+        }
+
+        public static void PrintPartition(int[] block)
+        {
+            List<List<int>> subsets = new List<List<int>>();
+            for (int i = 1; i < block.Length; i++)
+            {
+                List<int> subset = new List<int>();
+                for (int j = 1; j < block.Length; j++)
+                {
+                    if (block[j] == i)
+                    {
+                        subset.Add(j);
+                    }
+                }
+                if (subset.Count > 0)
+                {
+                    subsets.Add(subset);
+                }
+            }
+
+            string partition = "";
+            for (int i = 0; i < subsets.Count; i++)
+            {
+                partition += "(";
+                for (int j = 0; j < subsets[i].Count; j++)
+                {
+                    partition += subsets[i][j];
+                    if (j < subsets[i].Count - 1)
+                    {
+                        partition += ",";
+                    }
+                }
+                partition += ")";
+            }
+            Console.WriteLine(partition);
+        }
+    }
+}
